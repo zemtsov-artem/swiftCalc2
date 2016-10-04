@@ -7,11 +7,16 @@
 //
 
 import UIKit
+import Darwin
 
 var firstValue:Double = 0
 var secondValue:Double = 0
+var afterDatCount:Double = 0
 var operChoice:Int64 = -1
 var activeValue = 1
+var checkActiveOperation:Bool = false
+var isFirstOperation:Bool = true
+
 
 class ViewController: UIViewController {
 
@@ -25,11 +30,22 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func digit(_ sender: AnyObject) {
-        firstValue *= 10
-        firstValue += Double(sender.tag)
-        self.result.text = String(Int64(firstValue))
+    
+    //my funcs
+    func checkDat(Value:Double) -> Bool {
+        if (Value.truncatingRemainder(dividingBy: 1.0) == 0) { return true }
+        else { return false }
     }
+    
+    func changeActiveValue () -> Void {
+        if (activeValue == 1) {
+            activeValue = 2
+            afterDatCount = 0
+        } else {
+            activeValue = 1;
+        }
+    }
+    
     func printRes(Value:Double) -> Void {
         if ( Value.truncatingRemainder(dividingBy: 1.0) == 0){
             self.result.text = String(Int64(Value))
@@ -38,13 +54,105 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBAction func operation(_ sender: AnyObject) {
-        self.result.text = String(Int64(secondValue))
-        operChoice=Int64(sender.tag)
-        secondValue = firstValue // save first value
-        firstValue = 0           // zeroing back
-        activeValue = 2          // change № of active value
+    func checkValue(Value:Double) -> Bool {
+        if (abs(Value) >= 999999999){
+            return false
+        }
+        else {
+            if (Value==0) {
+                return true
+            }
+            else {
+                if (abs(Value)<=0.00000001) {
+                    return false
+                }
+                else {
+                    return true
+                }
+            }
+            
+        }
     }
+    
+    func makeOperation() ->Void {
+            switch operChoice { //code include this cases because sender.tag must be int
+            
+            //inc
+            case (101):
+                secondValue += firstValue
+            //substraction
+            case (102):
+                secondValue -= firstValue
+            //division
+            case (103):
+                secondValue /= firstValue
+            //multiplication
+            case (104):
+                secondValue *= firstValue
+            //take a procent
+            case (105):
+                secondValue *= (firstValue / 100)
+            default:
+                break
+            }
+            printRes(Value:secondValue)
+            changeActiveValue()
+            checkActiveOperation = false
+        
+    }
+    
+    //action
+    @IBAction func digit(_ sender: AnyObject) {
+        if (afterDatCount != 0) { // when number has a fraction
+            if (checkValue(Value:firstValue) ){
+                firstValue += Double(sender.tag)/pow(10,afterDatCount)
+                afterDatCount += 1
+                printRes(Value: firstValue)
+            }
+        }
+            
+        else {                    // Simple value without fraction
+            if (checkValue(Value:firstValue) ){
+                firstValue *= 10
+                firstValue += Double(sender.tag)
+                printRes(Value: firstValue)
+            }
+        }
+    }
+    
+    @IBAction func operation(_ sender: AnyObject) {
+        if (checkValue(Value: secondValue) ) {
+            if(checkActiveOperation) {   // reactive operation button
+                makeOperation()
+            } else {                    // simple active operation button
+                checkActiveOperation=true
+                printRes(Value: secondValue)
+                if (isFirstOperation) {
+                    isFirstOperation = false
+                    secondValue = firstValue // save first value
+                }
+            }
+            operChoice=Int64(sender.tag)
+            firstValue = 0           // zeroing back
+            changeActiveValue()      // change № of active value
+        
+        }
+    }
+   
+    @IBAction func calculation(_ sender: AnyObject) {
+        if (checkValue(Value: secondValue) ) {
+            makeOperation()
+        }
+    }
+    
+    
+    @IBAction func dot(_ sender: AnyObject) {
+        if (checkDat(Value:firstValue) ) {
+            afterDatCount = 1  // mark appearance of dat
+        }
+    }
+    
+    
     @IBAction func signChange(_ sender: AnyObject) {
         if (activeValue == 1) {
             firstValue -= 2 * firstValue
@@ -55,42 +163,16 @@ class ViewController: UIViewController {
             printRes(Value: secondValue)
         }
     }
-
-    @IBAction func dot(_ sender: AnyObject) {
-        
-    }
     
     @IBAction func clear(_ sender: AnyObject) {
         self.result.text = ""
         firstValue = 0
         secondValue = 0
+        afterDatCount = 0
+        isFirstOperation = true
     }
     
-    @IBAction func calculation(_ sender: AnyObject) {
-        switch operChoice {
-        //code include this cases because sender.tag must be int
-        //inc
-        case (101):
-            secondValue += firstValue
-        //substraction
-        case (102):
-            secondValue -= firstValue
-        //division
-        case (103):
-            secondValue /= firstValue
-        //multiplication
-        case (104):
-            secondValue *= firstValue
-        //take a procent
-        case (105):
-            secondValue *= firstValue / 100
-        default:
-            break
-        }
-        printRes(Value:secondValue)
-    }
-    
+    //outlets
     @IBOutlet weak var result: UILabel!
 
 }
-
