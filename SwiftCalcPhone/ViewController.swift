@@ -16,6 +16,7 @@ var operChoice:Int64 = -1
 var activeValue = 1
 var checkActiveOperation:Bool = false
 var isFirstOperation:Bool = true
+var afterCalc:Bool = false
 
 
 class ViewController: UIViewController {
@@ -98,11 +99,17 @@ class ViewController: UIViewController {
             printRes(Value:secondValue)
             changeActiveValue()
             checkActiveOperation = false
-        
+            afterCalc = true
     }
     
     //action
     @IBAction func digit(_ sender: AnyObject) {
+        if (afterCalc) {
+            firstValue = 0
+            secondValue = 0
+            afterCalc  = false
+            isFirstOperation = true
+        }
         if (afterDatCount != 0) { // when number has a fraction
             if (checkValue(Value:firstValue) ){
                 firstValue += Double(sender.tag)/pow(10,afterDatCount)
