@@ -99,7 +99,7 @@ class ViewController: UIViewController {
             printRes(Value:secondValue)
             changeActiveValue()
             checkActiveOperation = false
-            afterCalc = true
+        
     }
     
     //action
@@ -129,6 +129,9 @@ class ViewController: UIViewController {
     
     @IBAction func operation(_ sender: AnyObject) {
         if (checkValue(Value: secondValue) ) {
+            if (afterCalc) {
+                afterCalc = false
+            }
             if(checkActiveOperation) {   // reactive operation button
                 makeOperation()
             } else {                    // simple active operation button
@@ -149,6 +152,7 @@ class ViewController: UIViewController {
     @IBAction func calculation(_ sender: AnyObject) {
         if (checkValue(Value: secondValue) ) {
             makeOperation()
+            afterCalc = true
         }
     }
     
